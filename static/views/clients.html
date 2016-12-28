@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://cdn.static.runoob.com/libs/angular.js/1.4.6/angular.min.js"></script>
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/jquery.noty.packaged.min.js"></script>
+<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css" type="text/css"/>
+</head>
+<body>
+
+<div ng-app="myApp" ng-controller="customersCtrl"> 
+
+<table class="table table-striped table-bordered table-condensed">
+ <div>
+ <div class="btn-group">
+  <button class="btn" ng-click="sayHello()">sayHello</button>
+  <button class="btn" ng-click="sayGood()">sayGood</button>
+  <input type="file"/>
+ </div>
+ </div>
+  <tr>
+    <th><input type="checkbox" ng-model="selectedAll" ng-click="selectAll()"/></th>
+    <td>mac</td>
+
+    <td>ip</td>
+  </tr>
+  <tr ng-repeat="c in clients">
+    <th><input type="checkbox" ng-model="selected[c.mac]"/></th>
+    <td>{{ c.mac }}</td>
+    <td>{{ c.ip }}</td>
+  </tr>
+</table>
+
+</div>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('customersCtrl', function($scope, $http) {
+        $http.get("/listCl").success(function (response) {
+                             $scope.clients = response
+                             $scope.selectedAll = false;
+                             $scope.selected = {}
+                             angular.forEach($scope.clients, function(c){
+                                 $scope.selected[c.mac] = false;
+                             });
+            $scope.selectAll = function() {
+              angular.forEach($scope.clients, function(c){
+                  $scope.selected[c.mac] = $scope.selectedAll
+              });
+            };
+        });
+        $scope.sayHello = function() {
+              angular.forEach($scope.clients, function(c){
+                  if($scope.selected[c.mac]){
+                      $http.post("/say", {mac: c.mac})
+                      .success(function (response) {
+                          noty({text: response,
+				"layout": "topRight",
+                                //type: "information",
+                		theme: 'relax',
+                		dismissQueue: true,
+                		timeout: 1000,
+                		maxVisible: 5
+                          });
+                      })
+                      .error(function (error) {
+                          noty({text: error,
+				"layout": "topRight",
+                                //type: "error",
+                		theme: 'relax',
+                		dismissQueue: true,
+                		timeout: 1000,
+                		maxVisible: 5
+                          });
+                      })
+                  }
+                  $scope.selected[c.mac] = $scope.selectedAll
+              });
+            };
+
+        $scope.sayGood = function() {
+              angular.forEach($scope.clients, function(c){
+                  if($scope.selected[c.mac]){
+                      $http.post("/say2", {mac: c.mac}).success(function (response) {
+                          noty({text: response,
+				"layout": "topRight",
+                                //type: "information",
+                		theme: 'relax',
+                		dismissQueue: true,
+                		timeout: 1000,
+                		maxVisible: 5
+                          });
+                      })
+                      .error(function (error, status) {
+                          //alert(status);
+                          noty({text: error,
+				"layout": "topRight",
+                                //type: "error",
+                		theme: 'relax',
+                		dismissQueue: true,
+                		timeout: 1000,
+                		maxVisible: 5
+                          });
+                      })
+                  }
+                  $scope.selected[c.mac] = $scope.selectedAll
+              });
+            };
+    });
+</script>
+
+</body>
+</html>
+
